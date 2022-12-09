@@ -43,49 +43,61 @@ function playSound(filename) {
 class FeedbackDelay {
   constructor(audioContext) {
     // <-----------------------------
-    // code
+    this._output = audioContext.createGain();
+    this._delay = audioContext.createDelay();
+    this._delay.delayTime.value = 0.5;
+    this._delay.connect(this._output);
+    this._preGain = audioContext.createGain();
+    this._preGain.connect(this._delay);
+    this._feedback = audioContext.createGain();
+    this._feedback.connect(this._delay);
+    this._delay.connect(this._feedback);
+    this._input = audioContext.createGain();
+    this._input.connect(this._output);
+    this._input.connect(this._preGain);
+    this.input = this._input;
     // ---------------------------->
   }
 
-  connect(output) {
+  connect(node) {
     // <-----------------------------
-    // code
+    this._output.connect(node);
     // ---------------------------->
   }
 
   set preGain(value) {
     // <-----------------------------
-    // code
+    this._preGain.gain.value = value;
     // ---------------------------->
   }
 
   get preGain() {
     // <-----------------------------
-    // code
+    return this._preGain.gain.value;
     // ---------------------------->
   }
 
   set delayTime(value) {
     // <-----------------------------
-    // code
+    this._delay.delayTime.value = value;
     // ---------------------------->
   }
 
   get delayTime() {
     // <-----------------------------
-    // code
+    return this._delay.delayTime.value;
     // ---------------------------->
   }
 
   set feedback(value) {
     // <-----------------------------
-    // code
+    this._feedback.gain.value = value;
     // ---------------------------->
   }
 
   get feedback() {
     // <-----------------------------
-    // code
+    return this._feedback.gain.value;
     // ---------------------------->
   }
 
@@ -122,14 +134,14 @@ class FeedbackDelay {
 
   // 3. instanciate FeedbackDelay instante
   // <-----------------------------
-  // code
+  const myfeedback = new FeedbackDelay(audioContext);
   // ---------------------------->
   // connect to output
   // <-----------------------------
-  // code
+  myfeedback.connect(audioContext.destination);
   // ---------------------------->
   // store it into globals so that playSound can access it
-  globals.feedbackDelay = feedbackDelay;
+  globals.feedbackDelay = myfeedback;
 
   renderGUI();
 }());
@@ -182,7 +194,7 @@ function renderGUI() {
       </div>
     </div>
     ${Object.keys(model).map(filename => {
-      return html`
+    return html`
         <div style="padding-bottom: 4px">
           <sc-button
             value="${filename}"
@@ -201,6 +213,6 @@ function renderGUI() {
           ></sc-slider>
         </div>
       `
-    })}
+  })}
   `, $main);
 }
